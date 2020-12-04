@@ -29,8 +29,29 @@ class CreateAccount
     Apartment::Tenant.create(account.tenant) do
       initialize_account_data
       account.switch do
-        AdminSet.find_or_create_default_admin_set_id
+        create_defaults
+        fillin_translations
+        schedule_recurring_jobs
+        true
       end
+    end
+  end
+
+  def create_defaults
+    Hyrax::CollectionType.find_or_create_default_collection_type
+    Hyrax::CollectionType.find_or_create_admin_set_type
+    AdminSet.find_or_create_default_admin_set_id
+  end
+
+  # Workaround for upstream issue https://github.com/samvera/hyrax/issues/3136
+  def fillin_translations
+    collection_types = Hyrax::CollectionType.all
+    collection_types.each do |c|
+      next unless c.title =~ /^translation missing/
+      oldtitle = c.title
+      c.title = I18n.t(c.title.gsub("translation missing: en.", ''))
+      c.save
+      Rails.logger.debug "#{oldtitle} changed to #{c.title}"
     end
   end
 
@@ -39,6 +60,13 @@ class CreateAccount
   # specifically Solr and Fedora, and creation of the default Admin Set.
   def create_account_inline
     CreateAccountInlineJob.perform_now(account)
+  end
+
+  # Schedules jobs that will run automatically after
+  # the first time they are called
+  def schedule_recurring_jobs
+    EmbargoAutoExpiryJob.perform_later(account)
+    LeaseAutoExpiryJob.perform_later(account)
   end
 
   private
