@@ -81,7 +81,7 @@ group :development do
 end
 
 # Bulkrax
-gem 'bulkrax', git: 'https://github.com/samvera-labs/bulkrax.git'
+gem 'bulkrax', git: 'https://github.com/samvera-labs/bulkrax.git', ref: '82dffb267c382c3f096c1337ee09a084c9f0335e'
 gem 'willow_sword', git: 'https://github.com/notch8/willow_sword.git'
 
 gem 'blacklight', '~> 6.7'

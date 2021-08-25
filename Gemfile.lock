@@ -10,6 +10,7 @@ GIT
 GIT
   remote: https://github.com/samvera-labs/bulkrax.git
   revision: 82dffb267c382c3f096c1337ee09a084c9f0335e
+  ref: 82dffb267c382c3f096c1337ee09a084c9f0335e
   specs:
     bulkrax (0.1.0)
       bagit (~> 0.4)
@@ -701,8 +702,6 @@ GEM
       rdf
     racc (1.5.2)
     rack (2.2.3)
-    rack-protection (2.0.8.1)
-      rack
     rack-test (0.7.0)
       rack (>= 1.0, < 3)
     rails (5.2.6)
@@ -901,7 +900,6 @@ GEM
     sidekiq (6.1.2)
       connection_pool (>= 2.2.2)
       rack (~> 2.0)
-      rack-protection (>= 2.0.0)
       redis (>= 4.2.0)
     signet (0.15.0)
       addressable (~> 2.3)
@@ -1084,4 +1082,4 @@ DEPENDENCIES
   zk
 
 BUNDLED WITH
-   2.1.4
+   2.2.15
