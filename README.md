@@ -158,6 +158,39 @@ bundle exec rails db:migrate
 ./bin/import_from_purl ../hyku-objects bc390xk2647 bc402fk6835 bc483gc9313
 ```
 
+## Updating the app
+Ubiquity’s version of Hyku is built by the CI pipeline in the advancinghyku-utils gitlab repository. The .gitlab-ci.yml build:
+* Checks out hyku_base
+* Appends the contents of Gemfile.plugins to hyku_base’s Gemfile
+* Replaces hyku_base’s Gemfile.lock with a copy downloaded from hyku_addons
+* Runs bundle install
+* Runs install_plugins.sh which creates the database and runs install generators
+* Builds the docker image and pushes it to google cloud’s container registry
+* Packages the helm chart and pushes it to google cloud storage
+* Creates the Jira release
+
+Until UP is using hyku’s main branch changes can be brought in by checking out hyku_base, fetching the git history from
+upstream, and cherry-picking any commits wanted.  Once those are committed and pushed back up to hyku_base then the internal_test_hyku git submodule will need to be updated in hyku_addons and hyku-api.
+
+In commands this looks like:
+
+```
+git clone https://github.com/ubiquitypress/hyku_base.git
+cd hyku_base
+git remote add upstream https://github.com/samvera/hyku.git
+git fetch upstream
+git cherry-pick <commit-sha>
+git push origin main
+```
+
+Hyku_base is currently set to use any 2.x hyrax >= 2.9.1. To upgrade the version of hyrax used, do a `bundle update hyrax`
+in hyku_addons and commit the changes in Gemfile.lock. 
+Hyku_addons’ Gemfile.lock is used in the deployment image building to help determine which version of dependencies to use. 
+
+An alternative approach is to add the hyrax dependency version requirements to `Gemfile.plugins` in the deployment 
+container build (gitlab) to pin to a version greater than used in hyku_addons.  (For example, `gem “hyrax”, “>= 2.9.6”`.) 
+Switching to Hyrax 3 will happen first in upstream hyku and then brought into hyku_addons and will need to be applied to each plugin/gem.
+
 ## Compatibility
 
 * Ruby 2.4 or the latest 2.3 version is recommended.  Later versions may also work.
