@@ -51,7 +51,7 @@ group :development, :test do
   gem 'fcrepo_wrapper', '~> 0.4'
   gem 'solr_wrapper', '~> 2.0'
 
-  gem 'rubocop', '~> 0.50', '<= 0.52.1'
+  gem 'rubocop', '~> 1'
   gem 'rubocop-rspec', '~> 1.22', '<= 1.22.2'
 end
 
@@ -125,5 +125,5 @@ gem 'codemirror-rails'
 gem 'riiif', '~> 1.1'
 
 gem 'bootstrap-datepicker-rails'
-gem 'parser', '~> 2.5.3'
+gem 'parser', '~> 2.7'
 gem 'tether-rails'
