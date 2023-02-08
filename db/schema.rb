@@ -10,10 +10,19 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_07_29_105649) do
+ActiveRecord::Schema.define(version: 2021_12_14_153900) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "account_cross_searches", force: :cascade do |t|
+    t.bigint "search_account_id"
+    t.bigint "full_account_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["full_account_id"], name: "index_account_cross_searches_on_full_account_id"
+    t.index ["search_account_id"], name: "index_account_cross_searches_on_search_account_id"
+  end
 
   create_table "accounts", id: :serial, force: :cascade do |t|
     t.string "tenant"
@@ -24,10 +33,19 @@ ActiveRecord::Schema.define(version: 2021_07_29_105649) do
     t.integer "fcrepo_endpoint_id"
     t.string "name"
     t.integer "redis_endpoint_id"
+    t.bigint "datacite_endpoint_id"
+    t.jsonb "settings", default: {}
+    t.jsonb "data", default: {}
+    t.string "frontend_url", default: ""
+    t.boolean "search_only", default: false
     t.index ["cname", "tenant"], name: "index_accounts_on_cname_and_tenant"
     t.index ["cname"], name: "index_accounts_on_cname", unique: true
+    t.index ["data"], name: "index_accounts_on_data", using: :gin
+    t.index ["datacite_endpoint_id"], name: "index_accounts_on_datacite_endpoint_id"
     t.index ["fcrepo_endpoint_id"], name: "index_accounts_on_fcrepo_endpoint_id", unique: true
+    t.index ["frontend_url"], name: "index_accounts_on_frontend_url"
     t.index ["redis_endpoint_id"], name: "index_accounts_on_redis_endpoint_id", unique: true
+    t.index ["settings"], name: "index_accounts_on_settings", using: :gin
     t.index ["solr_endpoint_id"], name: "index_accounts_on_solr_endpoint_id", unique: true
   end
 
@@ -83,6 +101,10 @@ ActiveRecord::Schema.define(version: 2021_07_29_105649) do
     t.text "last_error"
     t.datetime "last_error_at"
     t.datetime "last_succeeded_at"
+    t.date "start_date"
+    t.date "finish_date"
+    t.string "work_visibility"
+    t.string "workflow_status"
     t.index ["user_id"], name: "index_bulkrax_exporters_on_user_id"
   end
 
@@ -120,6 +142,19 @@ ActiveRecord::Schema.define(version: 2021_07_29_105649) do
     t.datetime "last_error_at"
     t.datetime "last_succeeded_at"
     t.index ["user_id"], name: "index_bulkrax_importers_on_user_id"
+  end
+
+  create_table "bulkrax_statuses", force: :cascade do |t|
+    t.string "status_message"
+    t.string "error_class"
+    t.string "error_message"
+    t.text "error_backtrace"
+    t.integer "statusable_id"
+    t.string "statusable_type"
+    t.integer "runnable_id"
+    t.string "runnable_type"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "checksum_audit_logs", id: :serial, force: :cascade do |t|
@@ -709,6 +744,8 @@ ActiveRecord::Schema.define(version: 2021_07_29_105649) do
     t.integer "invited_by_id"
     t.string "invited_by_type"
     t.string "preferred_locale"
+    t.boolean "display_profile", default: false
+    t.text "biography"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["invitation_token"], name: "index_users_on_invitation_token", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
@@ -740,6 +777,8 @@ ActiveRecord::Schema.define(version: 2021_07_29_105649) do
     t.index ["work_id"], name: "index_work_view_stats_on_work_id"
   end
 
+  add_foreign_key "account_cross_searches", "accounts", column: "full_account_id"
+  add_foreign_key "account_cross_searches", "accounts", column: "search_account_id"
   add_foreign_key "accounts", "endpoints", column: "fcrepo_endpoint_id", on_delete: :nullify
   add_foreign_key "accounts", "endpoints", column: "redis_endpoint_id", on_delete: :nullify
   add_foreign_key "accounts", "endpoints", column: "solr_endpoint_id", on_delete: :nullify
@@ -747,9 +786,11 @@ ActiveRecord::Schema.define(version: 2021_07_29_105649) do
   add_foreign_key "bulkrax_importer_runs", "bulkrax_importers", column: "importer_id"
   add_foreign_key "collection_type_participants", "hyrax_collection_types"
   add_foreign_key "content_blocks", "sites"
+  add_foreign_key "curation_concerns_operations", "users"
   add_foreign_key "mailboxer_conversation_opt_outs", "mailboxer_conversations", column: "conversation_id", name: "mb_opt_outs_on_conversations_id"
   add_foreign_key "mailboxer_notifications", "mailboxer_conversations", column: "conversation_id", name: "notifications_on_conversation_id"
   add_foreign_key "mailboxer_receipts", "mailboxer_notifications", column: "notification_id", name: "receipts_on_notification_id"
   add_foreign_key "permission_template_accesses", "permission_templates"
   add_foreign_key "qa_local_authority_entries", "qa_local_authorities", column: "local_authority_id"
+  add_foreign_key "uploaded_files", "users"
 end
