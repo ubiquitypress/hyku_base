@@ -2,7 +2,9 @@
 
 class GenericWork < ActiveFedora::Base
   include ::Hyrax::WorkBehavior
-  include ::Hyrax::BasicMetadata
+
+  # HykuAddons initializer will include more modules and then close the work with this include
+  #  include ::Hyrax::BasicMetadata
 
   validates :title, presence: { message: 'Your work must have a title.' }
 
